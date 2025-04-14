@@ -26,11 +26,12 @@ func main() {
 
 	// Initialize router
 	router := gin.New()
-
 	userRepo := userRepository.NewUserRepository(db)
 	userUsecase := userUsecase.NewUserUsecase(userRepo)
+
 	userDelivery.NewUserHandler(router, userUsecase)
 
 	// Start server on port 8000
 	log.Fatal(http.ListenAndServe(":8000", router))
+
 }

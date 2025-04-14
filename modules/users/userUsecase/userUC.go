@@ -20,3 +20,12 @@ func (uc *UserUsecase) GetAllUsers() (*[]userModel.User, error) {
 	}
 	return users, nil
 }
+
+func (uc *UserUsecase) CreateUser(user *userModel.User) (*int64, error) {
+	id, err := uc.UserRepository.CreateUser(user)
+	if err != nil {
+		return nil, err
+	}
+	return id, nil
+
+}

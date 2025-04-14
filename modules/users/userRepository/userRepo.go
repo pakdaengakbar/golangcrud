@@ -33,3 +33,18 @@ func (db *sqlRepository) GetAllUsers() (*[]userModel.User, error) {
 
 	return &users, nil
 }
+
+func (db *sqlRepository) CreateUser(user *userModel.User) (*int64, error) {
+
+	result, err := db.Conn.Exec("INSERT INTO users (name, email) VALUES (?, ?)", user.Name, user.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	return &id, err
+}
