@@ -50,11 +50,17 @@ func (db *sqlRepository) CreateUser(user *userModel.User) (*int64, error) {
 	return &id, err
 }
 
-func (db *sqlRepository) DeleteUser(user *userModel.User) (*int64, error) error {
+func (db *sqlRepository) DeleteUser(id int) error {
 	query := "DELETE FROM users WHERE id = ?"
-	_, err := db.Exec(query, user.ID)
+	_, err := db.Conn.Exec(query, id)
 	if err != nil {
 		return err
 	}
-	return nil
+	return err
+}
+
+func (db *sqlRepository) UpdateUser(user *userModel.User) error {
+	_, err := db.Conn.Exec("UPDATE users SET name = ?, email = ? WHERE id = ?", user.Name, user.Email, user.ID)
+
+	return err
 }

@@ -1,8 +1,11 @@
 package userDelivery
 
 import (
+	"fmt"
 	"golangcrud/models/userModel"
 	"golangcrud/modules/users"
+	"log"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,8 +24,10 @@ func NewUserHandler(r *gin.Engine, userUsecase users.UserUsecase) {
 	{
 		users.GET("/", handler.GetAllUsers)
 		users.POST("/", handler.CreateUserHandler)
-		users.DELETE("/", handler.DeleteUserHandler)
+		users.DELETE("/:id", handler.DeleteUserHandler)
+		users.PUT("/", handler.UpdateUserHandler)
 	}
+	log.Println(users)
 }
 
 func (h *userHandler) GetAllUsers(c *gin.Context) {
@@ -51,15 +56,40 @@ func (h *userHandler) CreateUserHandler(c *gin.Context) {
 
 // DeleteUserHandler is a function that sets up the user creation route
 func (h *userHandler) DeleteUserHandler(c *gin.Context) {
-	var user userModel.User
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(400, gin.H{"error": "Bad Request"})
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(400, gin.H{"error": "Bad Request : id cannot be empty"})
 		return
 	}
-	id, err := h.UserUsecase.CreateUser(&user)
+
+	// Convert id to int
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Bad Request : id must be a number"})
+		return
+	}
+	log.Println("Query error:", id)
+
+	err = h.UserUsecase.DeleteUser(idInt)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Internal Server Error"})
 		return
 	}
-	c.JSON(201, gin.H{"id": id})
+	c.JSON(201, gin.H{"message": "User deleted successfully"})
+}
+
+func (h *userHandler) UpdateUserHandler(c *gin.Context) {
+	var user userModel.User
+
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(400, gin.H{"error": "Bad Request"})
+		return
+	}
+	fmt.Println(user)
+	err := h.UserUsecase.UpdateUser(&user)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Internal Server Error"})
+		return
+	}
+	c.JSON(200, gin.H{"message": "User updated successfully"})
 }

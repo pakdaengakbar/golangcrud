@@ -28,10 +28,13 @@ func (uc *UserUsecase) CreateUser(user *userModel.User) (*int64, error) {
 	}
 	return id, nil
 }
-func (uc *UserUsecase) DeleteUser(user *userModel.User) (*int64, error) {
-	id, err := uc.UserRepository.CreateUser(user)
-	if err != nil {
-		return nil, err
-	}
-	return id, nil
+
+func (uc *UserUsecase) DeleteUser(id int) error {
+	err := uc.UserRepository.DeleteUser(id)
+	return err
+}
+
+func (uc *UserUsecase) UpdateUser(user *userModel.User) error {
+	err := uc.UserRepository.UpdateUser(user)
+	return err
 }
