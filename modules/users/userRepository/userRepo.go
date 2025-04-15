@@ -38,6 +38,7 @@ func (db *sqlRepository) CreateUser(user *userModel.User) (*int64, error) {
 
 	result, err := db.Conn.Exec("INSERT INTO users (name, email) VALUES (?, ?)", user.Name, user.Email)
 	if err != nil {
+		log.Println("Query error:", err)
 		return nil, err
 	}
 
@@ -47,4 +48,13 @@ func (db *sqlRepository) CreateUser(user *userModel.User) (*int64, error) {
 	}
 
 	return &id, err
+}
+
+func (db *sqlRepository) DeleteUser(user *userModel.User) (*int64, error) error {
+	query := "DELETE FROM users WHERE id = ?"
+	_, err := db.Exec(query, user.ID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
