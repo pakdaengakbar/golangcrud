@@ -45,6 +45,7 @@ func (h *compHandler) CreateComp(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "Bad Request"})
 		return
 	}
+
 	id, err := h.compUsecase.CreateCompanie(&comp)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Internal Server Error"})

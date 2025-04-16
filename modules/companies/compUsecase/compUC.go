@@ -22,6 +22,7 @@ func (cc CompUsecase) GetAllCompanies() (*[]companieModel.Companie, error) {
 }
 
 func (cc *CompUsecase) CreateCompanie(comp *companieModel.Companie) (*int64, error) {
+
 	id, err := cc.CompRepository.CreateCompanie(comp)
 	if err != nil {
 		return nil, err
@@ -30,6 +31,6 @@ func (cc *CompUsecase) CreateCompanie(comp *companieModel.Companie) (*int64, err
 }
 
 func (cc *CompUsecase) DeleteCompanie(id int) error {
-	err := cc.DeleteCompanie(id)
+	err := cc.CompRepository.DeleteCompanie(id)
 	return err
 }

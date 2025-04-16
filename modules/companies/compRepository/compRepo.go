@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"golangcrud/models/companieModel"
 	"golangcrud/modules/companies"
+	"log"
 )
 
 type sqlRepository struct {
@@ -16,7 +17,7 @@ func NewCompRepository(Conn *sql.DB) companies.CompRepository {
 
 func (db *sqlRepository) GetAllCompanies() (*[]companieModel.Companie, error) {
 	var companies []companieModel.Companie
-	rows, err := db.Conn.Query("SELECT Id, Cname, Cdescription, Caddress, Chotline, Cemail, Created_at FROM mcompanies")
+	rows, err := db.Conn.Query("SELECT Id, Cname, Cdescription, Caddress, Created_at FROM mcompanies")
 	if err != nil {
 		// log.Println("Query error:", err)
 		return nil, err
@@ -24,7 +25,7 @@ func (db *sqlRepository) GetAllCompanies() (*[]companieModel.Companie, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var company companieModel.Companie
-		if err := rows.Scan(&company.Id, &company.Cname, &company.Cdescription, &company.Caddress, &company.Chotline, &company.Cemail, &company.Created_at); err != nil {
+		if err := rows.Scan(&company.Id, &company.Cname, &company.Cdescription, &company.Caddress, &company.Created_at); err != nil {
 			return nil, err
 		}
 		companies = append(companies, company)
@@ -33,11 +34,13 @@ func (db *sqlRepository) GetAllCompanies() (*[]companieModel.Companie, error) {
 }
 
 func (db *sqlRepository) CreateCompanie(company *companieModel.Companie) (*int64, error) {
-	query := "INSERT INTO mcompanies (Cname, Cdescription, Caddress, Chotline, Cemail) VALUES (?, ?, ?, ?, ?)"
-	result, err := db.Conn.Exec(query, company.Cname, company.Cdescription, company.Caddress, company.Chotline, company.Cemail)
+	//field := "INSERT INTO mcompanies (Cname, Cdescription, Caddress, Chotline, Cemail) VALUES (?, ?, ?, ?, ?)"
+	result, err := db.Conn.Exec("INSERT INTO mcompanies (Cname, Cdescription, Caddress) VALUES (?, ?, ?)", company.Cname, company.Cdescription, company.Caddress)
 	if err != nil {
+		log.Println("Query error:", err)
 		return nil, err
 	}
+
 	id, err := result.LastInsertId()
 	if err != nil {
 		return nil, err
