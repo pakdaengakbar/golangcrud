@@ -6,6 +6,11 @@ import (
 	"golangcrud/modules/users/userDelivery"
 	"golangcrud/modules/users/userRepository"
 	"golangcrud/modules/users/userUsecase"
+
+	"golangcrud/modules/companies/compDelivery"
+	"golangcrud/modules/companies/compRepository"
+	"golangcrud/modules/companies/compUsecase"
+
 	"log"
 	"net/http"
 
@@ -26,10 +31,14 @@ func main() {
 
 	// Initialize router
 	router := gin.New()
+	// Initialize user
 	userRepo := userRepository.NewUserRepository(db)
 	userUsecase := userUsecase.NewUserUsecase(userRepo)
-
 	userDelivery.NewUserHandler(router, userUsecase)
+	// Initialize company
+	compRepo := compRepository.NewCompRepository(db)
+	compUsecase := compUsecase.NewCompUsecase(compRepo)
+	compDelivery.NewCompanieHandler(router, compUsecase)
 
 	// Start server on port 8000
 	log.Fatal(http.ListenAndServe(":8000", router))
