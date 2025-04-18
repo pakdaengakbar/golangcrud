@@ -67,7 +67,7 @@ func (db *sqlRepository) GetCompanie(id int) (*companieModel.Companie, error) {
 	err := row.Scan(&company.Id, &company.Cname, &company.Cdescription, &company.Caddress)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("no data found") // No rows found
+			return nil, fmt.Errorf("no data found for id %d", id) // No rows found
 		}
 		return nil, err // Other error
 	}

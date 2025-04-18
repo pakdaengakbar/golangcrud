@@ -39,7 +39,7 @@ func (uc *UserUsecase) UpdateUser(user *userModel.User) error {
 	return err
 }
 
-func (uc *UserUsecase) GetUser(id int) (*[]userModel.User, error) {
+func (uc *UserUsecase) GetUser(id int) (*userModel.User, error) {
 	users, err := uc.UserRepository.GetUser(id)
 	if err != nil {
 		return nil, err

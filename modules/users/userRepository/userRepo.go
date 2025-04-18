@@ -73,28 +73,17 @@ func (db *sqlRepository) UpdateUser(user *userModel.User) error {
 	return err
 }
 
-func (db *sqlRepository) GetUser(id int) (*[]userModel.User, error) {
-	//var ErrUserNotFound = errors.New("user not found..")
-	var users []userModel.User
-	rows, err := db.Conn.Query("SELECT id, name, email, created_at FROM users WHERE id = ?", id)
-	if err != nil {
-		log.Println("Query error:", err)
+func (db *sqlRepository) GetUser(id int) (*userModel.User, error) {
+	var user userModel.User
+
+	row := db.Conn.QueryRow("SELECT id, name, email, created_at FROM users WHERE id = ?", id)
+	if err := row.Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("no data found for id %d", id) // No rows found
+		}
 		return nil, err
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var user userModel.User
-		if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt); err != nil {
-			return nil, err
-		}
-		users = append(users, user)
-	}
-
-	if len(users) == 0 {
-		return nil, fmt.Errorf("no data found") // or a custom error if you want
-	}
-	return &users, nil
-
+	return &user, nil
 }
 
 func pswEncryption(password string) string {
