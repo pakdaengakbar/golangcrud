@@ -34,3 +34,14 @@ func (cc *CompUsecase) DeleteCompanie(id int) error {
 	err := cc.CompRepository.DeleteCompanie(id)
 	return err
 }
+
+func (cc *CompUsecase) GetCompanie(id int) (*companieModel.Companie, error) {
+	companie, err := cc.CompRepository.GetCompanie(id)
+	if err != nil {
+		return nil, err
+	}
+	if companie == nil {
+		return nil, nil // No rows found
+	}
+	return companie, nil
+}

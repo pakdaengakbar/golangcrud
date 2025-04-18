@@ -56,6 +56,30 @@ func (h *userHandler) CreateUserHandler(c *gin.Context) {
 	c.JSON(201, gin.H{"id": id})
 }
 
+// DeleteUserHandler is a function that sets up the user creation route
+func (h *userHandler) DeleteUserHandler(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(400, gin.H{"error": "Bad Request : id cannot be empty"})
+		return
+	}
+	// Convert id to int
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Bad Request : id must be a number"})
+		return
+	}
+	log.Println("Query error:", id)
+
+	err = h.UserUsecase.DeleteUser(idInt)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Internal Server Error"})
+		return
+	}
+	c.JSON(201, gin.H{"message": "User deleted successfully"})
+}
+
+// GetUser is a function that sets up the user creation route
 func (h *userHandler) GetUser(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -76,31 +100,6 @@ func (h *userHandler) GetUser(c *gin.Context) {
 	}
 	c.JSON(200, user)
 }
-
-// DeleteUserHandler is a function that sets up the user creation route
-func (h *userHandler) DeleteUserHandler(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
-		c.JSON(400, gin.H{"error": "Bad Request : id cannot be empty"})
-		return
-	}
-
-	// Convert id to int
-	idInt, err := strconv.Atoi(id)
-	if err != nil {
-		c.JSON(400, gin.H{"error": "Bad Request : id must be a number"})
-		return
-	}
-	log.Println("Query error:", id)
-
-	err = h.UserUsecase.DeleteUser(idInt)
-	if err != nil {
-		c.JSON(500, gin.H{"error": "Internal Server Error"})
-		return
-	}
-	c.JSON(201, gin.H{"message": "User deleted successfully"})
-}
-
 func (h *userHandler) UpdateUserHandler(c *gin.Context) {
 	var user userModel.User
 

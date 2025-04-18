@@ -25,6 +25,7 @@ func NewCompanieHandler(r *gin.Engine, compUsecase companies.CompUsecase) {
 		companies.GET("/", handler.GetAllComp)
 		companies.POST("/", handler.CreateComp)
 		companies.DELETE("/:id", handler.DeleteComp)
+		companies.GET("/:id", handler.GetComp)
 	}
 	fmt.Println(companies)
 	log.Println(companies)
@@ -77,4 +78,25 @@ func (h *compHandler) DeleteComp(c *gin.Context) {
 		return
 	}
 	c.JSON(201, gin.H{"message": "User deleted successfully"})
+}
+
+func (h *compHandler) GetComp(c *gin.Context) {
+	id := c.Param("id")
+	// Check if id is empty
+	if id == "" {
+		c.JSON(400, gin.H{"error": "Bad Request : id cannot be empty"})
+		return
+	}
+	// Convert id to int
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Bad Request : id must be a number"})
+		return
+	}
+	comp, err := h.compUsecase.GetCompanie(idInt)
+	if err != nil {
+		c.JSON(404, gin.H{"error": "No Data Found"})
+		return
+	}
+	c.JSON(200, comp)
 }

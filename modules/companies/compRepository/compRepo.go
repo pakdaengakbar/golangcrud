@@ -2,6 +2,7 @@ package compRepository
 
 import (
 	"database/sql"
+	"fmt"
 	"golangcrud/models/companieModel"
 	"golangcrud/modules/companies"
 	"log"
@@ -56,4 +57,19 @@ func (db *sqlRepository) DeleteCompanie(id int) error {
 		return err
 	}
 	return err
+}
+
+func (db *sqlRepository) GetCompanie(id int) (*companieModel.Companie, error) {
+	query := "SELECT Id, Cname, Cdescription, Caddress FROM mcompanies WHERE Id = ?"
+	row := db.Conn.QueryRow(query, id)
+
+	var company companieModel.Companie
+	err := row.Scan(&company.Id, &company.Cname, &company.Cdescription, &company.Caddress)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("no data found") // No rows found
+		}
+		return nil, err // Other error
+	}
+	return &company, nil
 }
