@@ -59,7 +59,7 @@ func (db *sqlRepository) DeleteCompanie(id int) error {
 	return err
 }
 
-func (db *sqlRepository) GetCompanie(id int) (*companieModel.Companie, error) {
+func (db *sqlRepository) GetCompanieByid(id int) (*companieModel.Companie, error) {
 	query := "SELECT Id, Cname, Cdescription, Caddress FROM mcompanies WHERE Id = ?"
 	row := db.Conn.QueryRow(query, id)
 
@@ -72,4 +72,28 @@ func (db *sqlRepository) GetCompanie(id int) (*companieModel.Companie, error) {
 		return nil, err // Other error
 	}
 	return &company, nil
+}
+
+func (db *sqlRepository) GetCompanieByname(name string) (*[]companieModel.Companie, error) {
+	var companies []companieModel.Companie
+
+	namePattern := "%" + name + "%" // or "%"+name if you want it to match suffix only
+	rows, err := db.Conn.Query("SELECT Id, Cname, Cdescription, Caddress, Created_at FROM mcompanies WHERE Cname LIKE ? OR Cdescription LIKE ?", namePattern, namePattern)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var company companieModel.Companie
+		if err := rows.Scan(&company.Id, &company.Cname, &company.Cdescription, &company.Caddress, &company.Created_at); err != nil {
+			return nil, err
+		}
+		companies = append(companies, company)
+	}
+
+	if len(companies) == 0 {
+		return nil, fmt.Errorf("no data found for name %s", name) // No rows found
+	}
+	return &companies, nil
 }

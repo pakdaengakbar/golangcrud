@@ -1,7 +1,6 @@
 package compDelivery
 
 import (
-	"fmt"
 	"golangcrud/models/companieModel"
 	"golangcrud/modules/companies"
 	"log"
@@ -25,10 +24,9 @@ func NewCompanieHandler(r *gin.Engine, compUsecase companies.CompUsecase) {
 		companies.GET("/", handler.GetAllComp)
 		companies.POST("/", handler.CreateComp)
 		companies.DELETE("/:id", handler.DeleteComp)
-		companies.GET("/:id", handler.GetComp)
+		companies.GET("/:id", handler.GetCompanieByid)
+		companies.GET("/field/:name", handler.GetCompanieByname)
 	}
-	fmt.Println(companies)
-	log.Println(companies)
 }
 
 func (h *compHandler) GetAllComp(c *gin.Context) {
@@ -80,7 +78,7 @@ func (h *compHandler) DeleteComp(c *gin.Context) {
 	c.JSON(201, gin.H{"message": "User deleted successfully"})
 }
 
-func (h *compHandler) GetComp(c *gin.Context) {
+func (h *compHandler) GetCompanieByid(c *gin.Context) {
 	id := c.Param("id")
 	// Check if id is empty
 	if id == "" {
@@ -93,9 +91,25 @@ func (h *compHandler) GetComp(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "Bad Request : id must be a number"})
 		return
 	}
-	comp, err := h.compUsecase.GetCompanie(idInt)
+	comp, err := h.compUsecase.GetCompanieByid(idInt)
 	if err != nil {
 		c.JSON(404, gin.H{"error": "No Data Found"})
+		return
+	}
+	c.JSON(200, comp)
+}
+
+func (h *compHandler) GetCompanieByname(c *gin.Context) {
+	name := c.Param("name")
+	// Check if name is empty
+	if name == "" {
+		c.JSON(400, gin.H{"error": "Bad Request : name cannot be empty"})
+		return
+	}
+
+	comp, err := h.compUsecase.GetCompanieByname(name)
+	if err != nil {
+		c.JSON(404, gin.H{"error": "Data not Found..!"})
 		return
 	}
 	c.JSON(200, comp)

@@ -30,7 +30,7 @@ func main() {
 	defer db.Close()
 
 	// Initialize router
-	router := gin.New()
+	router := gin.New()x
 	// Initialize user
 	userRepo := userRepository.NewUserRepository(db)
 	userUsecase := userUsecase.NewUserUsecase(userRepo)
