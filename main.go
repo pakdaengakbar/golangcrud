@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"golangcrud/connection"
+
+	// Removed duplicate import
 	"golangcrud/modules/users/userDelivery"
 	"golangcrud/modules/users/userRepository"
 	"golangcrud/modules/users/userUsecase"
@@ -10,6 +12,10 @@ import (
 	"golangcrud/modules/companies/compDelivery"
 	"golangcrud/modules/companies/compRepository"
 	"golangcrud/modules/companies/compUsecase"
+
+	"golangcrud/modules/branchs/branchDelivery"
+	"golangcrud/modules/branchs/branchRepository"
+	"golangcrud/modules/branchs/branchUsecase"
 
 	"log"
 	"net/http"
@@ -30,7 +36,7 @@ func main() {
 	defer db.Close()
 
 	// Initialize router
-	router := gin.New()x
+	router := gin.New()
 	// Initialize user
 	userRepo := userRepository.NewUserRepository(db)
 	userUsecase := userUsecase.NewUserUsecase(userRepo)
@@ -39,6 +45,10 @@ func main() {
 	compRepo := compRepository.NewCompRepository(db)
 	compUsecase := compUsecase.NewCompUsecase(compRepo)
 	compDelivery.NewCompanieHandler(router, compUsecase)
+	// Initialize branch
+	branchRepo := branchRepository.NewBranchRepository(db)
+	branchUsecase := branchUsecase.NewBranchUsecase(branchRepo)
+	branchDelivery.NewBranchHandler(router, branchUsecase)
 
 	// Start server on port 8000
 	log.Fatal(http.ListenAndServe(":8000", router))

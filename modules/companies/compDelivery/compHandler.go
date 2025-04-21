@@ -25,7 +25,7 @@ func NewCompanieHandler(r *gin.Engine, compUsecase companies.CompUsecase) {
 		companies.POST("/", handler.CreateComp)
 		companies.DELETE("/:id", handler.DeleteComp)
 		companies.GET("/:id", handler.GetCompanieByid)
-		companies.GET("/field/:name", handler.GetCompanieByname)
+		companies.GET("/filter/:name", handler.GetCompanieByname)
 	}
 }
 
