@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"golangcrud/connection"
+	"golangcrud/middleware"
 
 	// Removed duplicate import
 	"golangcrud/modules/users/userDelivery"
@@ -17,6 +18,7 @@ import (
 	"golangcrud/modules/branchs/branchRepository"
 	"golangcrud/modules/branchs/branchUsecase"
 
+	"fmt"
 	"log"
 	"net/http"
 
@@ -26,6 +28,10 @@ import (
 )
 
 func main() {
+	mux := http.NewServeMux()
+	mux.Handle("/secure-endpoint", middleware.APIKeyAuth(http.HandlerFunc(secureHandler)))
+	http.ListenAndServe(":8000", mux)
+
 	// Initialize database connection
 	var db *sql.DB
 	var err error
@@ -53,4 +59,8 @@ func main() {
 	// Start server on port 8000
 	log.Fatal(http.ListenAndServe(":8000", router))
 
+}
+
+func secureHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Welcome! You passed the API key check.")
 }
