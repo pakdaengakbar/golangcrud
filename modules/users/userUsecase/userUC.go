@@ -46,3 +46,7 @@ func (uc *UserUsecase) GetUser(id int) (*userModel.User, error) {
 	}
 	return users, nil
 }
+
+func (uc *UserUsecase) FindByEmail(email string) (*userModel.User, error) {
+	return uc.UserRepository.FindByEmail(email)
+}

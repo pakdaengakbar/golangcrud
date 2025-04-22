@@ -8,6 +8,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+
+	"golangcrud/middleware"
 )
 
 type userHandler struct {
@@ -18,7 +20,12 @@ func NewUserHandler(r *gin.Engine, userUsecase users.UserUsecase) {
 	handler := userHandler{
 		UserUsecase: userUsecase,
 	}
+
+	r.POST("/login", handler.LoginHandler)     // Add this here
+	r.POST("/refresh", handler.RefreshHandler) //
+
 	users := r.Group("/users")
+	users.Use(middleware.JWTAuth())
 	users.Use()
 	{
 		users.GET("/", handler.GetAllUsers)
@@ -27,6 +34,7 @@ func NewUserHandler(r *gin.Engine, userUsecase users.UserUsecase) {
 		users.GET("/:id", handler.GetUser)
 		users.PUT("/", handler.UpdateUserHandler)
 	}
+
 }
 
 func (h *userHandler) GetAllUsers(c *gin.Context) {
@@ -100,6 +108,7 @@ func (h *userHandler) GetUser(c *gin.Context) {
 	}
 	c.JSON(200, user)
 }
+
 func (h *userHandler) UpdateUserHandler(c *gin.Context) {
 	var user userModel.User
 

@@ -1,34 +1,55 @@
 package middleware
 
-// Middleware for API key authentication
-
 import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-func APIKeyAuth(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
+func JWTAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			http.Error(w, "Authorization header missing", http.StatusUnauthorized)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
+			c.Abort()
 			return
 		}
 
-		if !strings.HasPrefix(authHeader, "ApiKey ") {
-			http.Error(w, "Invalid authorization format", http.StatusUnauthorized)
+		// Expected format: "Bearer <token>"
+		parts := strings.Split(authHeader, " ")
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format"})
+			c.Abort()
 			return
 		}
 
-		apiKey := strings.TrimPrefix(authHeader, "ApiKey ")
-		expectedKey := os.Getenv("API_KEY") // load from env for security
+		tokenString := parts[1]
+		secret := os.Getenv("JWT_SECRET")
 
-		if apiKey != expectedKey {
-			http.Error(w, "Invalid API key", http.StatusUnauthorized)
+		// Uncomment the line below to set a default secret if not set in the environment
+		//secret := "your_super_secret"
+		if secret == "" {
+			secret = "defaultsecret" // fallback if not set
+		}
+
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			// Make sure token method conforms to expected signing method
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, jwt.ErrSignatureInvalid
+			}
+			return []byte(secret), nil
+		})
+
+		if err != nil || !token.Valid {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			c.Abort()
 			return
 		}
 
-		next.ServeHTTP(w, r)
-	})
+		c.Next()
+	}
 }

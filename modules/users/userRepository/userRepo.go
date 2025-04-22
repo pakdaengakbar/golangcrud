@@ -18,6 +18,18 @@ func NewUserRepository(Conn *sql.DB) *sqlRepository {
 	return &sqlRepository{Conn}
 }
 
+func (r *sqlRepository) FindByEmail(email string) (*userModel.User, error) {
+	query := "SELECT id, name, email, password FROM users WHERE email = ?"
+	row := r.Conn.QueryRow(query, email)
+
+	var user userModel.User
+	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.Password)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (db *sqlRepository) GetAllUsers() (*[]userModel.User, error) {
 	var users []userModel.User
 	rows, err := db.Conn.Query("SELECT id, name, email, created_at FROM users")

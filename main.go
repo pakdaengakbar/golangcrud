@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"golangcrud/connection"
-	"golangcrud/middleware"
 
 	// Removed duplicate import
 	"golangcrud/modules/users/userDelivery"
@@ -18,20 +17,16 @@ import (
 	"golangcrud/modules/branchs/branchRepository"
 	"golangcrud/modules/branchs/branchUsecase"
 
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 	// Import the connection package for database connection
 )
 
 func main() {
-	mux := http.NewServeMux()
-	mux.Handle("/secure-endpoint", middleware.APIKeyAuth(http.HandlerFunc(secureHandler)))
-	http.ListenAndServe(":8000", mux)
-
 	// Initialize database connection
 	var db *sql.DB
 	var err error
@@ -40,6 +35,11 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
+	// Initialize env
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	// Initialize router
 	router := gin.New()
@@ -47,20 +47,18 @@ func main() {
 	userRepo := userRepository.NewUserRepository(db)
 	userUsecase := userUsecase.NewUserUsecase(userRepo)
 	userDelivery.NewUserHandler(router, userUsecase)
+
 	// Initialize company
 	compRepo := compRepository.NewCompRepository(db)
 	compUsecase := compUsecase.NewCompUsecase(compRepo)
 	compDelivery.NewCompanieHandler(router, compUsecase)
+
 	// Initialize branch
 	branchRepo := branchRepository.NewBranchRepository(db)
 	branchUsecase := branchUsecase.NewBranchUsecase(branchRepo)
 	branchDelivery.NewBranchHandler(router, branchUsecase)
 
 	// Start server on port 8000
-	log.Fatal(http.ListenAndServe(":8000", router))
+	log.Fatal(http.ListenAndServe(":8080", router))
 
-}
-
-func secureHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Welcome! You passed the API key check.")
 }
