@@ -37,18 +37,16 @@ func (db *sqlRepository) GetAllBranches() (*[]branchModel.Branch, error) {
 	return &branches, nil
 }
 
-func (db *sqlRepository) GetBranchesFiltered(keyword string) (*[]branchModel.Branch, error) {
+func (db *sqlRepository) GetBranchesFiltered(keyword string, page int, pageSize int) (*[]branchModel.Branch, error) {
 	var branches []branchModel.Branch
 
-	var page = 1      // Default page number
-	var pageSize = 10 // Default page size
 	if pageSize <= 0 {
-		pageSize = 10 // Set to default if invalid
+		pageSize = 10
 	}
-
-	// Basic query
-	// page, err := strconv.Atoi(strconv.Itoa(pages))
-	// pageSize, err := strconv.Atoi(strconv.Itoa(pagesSize))
+	if page < 1 {
+		page = 1
+	}
+	offset := (page - 1) * pageSize
 
 	query := `SELECT 
 			b.Id, 
@@ -66,7 +64,6 @@ func (db *sqlRepository) GetBranchesFiltered(keyword string) (*[]branchModel.Bra
 
 	// Prepare search pattern and pagination values
 	search := "%" + keyword + "%"
-	offset := (page - 1) * pageSize
 
 	rows, err := db.Conn.Query(query, search, search, search, pageSize, offset)
 	if err != nil {

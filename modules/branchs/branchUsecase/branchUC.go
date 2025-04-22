@@ -21,8 +21,8 @@ func (bc BranchUsecase) GetAllBranches() (*[]branchModel.Branch, error) {
 	return branches, nil
 }
 
-func (bc BranchUsecase) GetBranchesFiltered(keyword string) (*[]branchModel.Branch, error) {
-	branches, err := bc.BranchRepository.GetBranchesFiltered(keyword)
+func (bc BranchUsecase) GetBranchesFiltered(keyword string, page int, pageSize int) (*[]branchModel.Branch, error) {
+	branches, err := bc.BranchRepository.GetBranchesFiltered(keyword, page, pageSize)
 	if err != nil {
 		return nil, err
 	}

@@ -2,6 +2,7 @@ package branchDelivery
 
 import (
 	"golangcrud/modules/branchs"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,47 +20,41 @@ func NewBranchHandler(r *gin.Engine, branchUsecase branchs.BranchUsecase) {
 	branch.Use()
 	{
 		branch.GET("/", handler.GetAllBranch)
-		branch.GET("/filter/:name", handler.GetBranchesFiltered)
 
 	}
 }
 
 func (h *branchHandler) GetAllBranch(c *gin.Context) {
-	branches, err := h.branchUsecase.GetAllBranches()
-	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(200, branches)
-}
+	// Get the "name" query parameter
+	name := c.Query("name")
+	pageStr := c.Query("pages")
+	offsetStr := c.Query("offset")
 
-func (h *branchHandler) GetBranchesFiltered(c *gin.Context) {
-	name := c.Param("name")
-	// Check if name is empty
+	// Convert page and offset to integers
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 1 {
+		offset = 10
+	}
+
 	if name == "" {
-		c.JSON(400, gin.H{"error": "Bad Request : name cannot be empty"})
-		return
+		branches, err := h.branchUsecase.GetAllBranches()
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, branches)
 	}
-	// page := c.Query("page")
-	// pageSize := c.Query("pageSize")
 
-	// pageInt, err := strconv.Atoi(page)
-	// if err != nil {
-	// 	c.JSON(500, gin.H{"error": err.Error()})
-	// 	return
-	// }
-
-	// pageSizeInt, err := strconv.Atoi(pageSize)
-	// if err != nil {
-	// 	c.JSON(500, gin.H{"error": err.Error()})
-	// 	return
-	// }
-
-	branches, err := h.branchUsecase.GetBranchesFiltered(name)
+	branches, err := h.branchUsecase.GetBranchesFiltered(name, page, offset)
 	if err != nil {
 		//c.JSON(404, gin.H{"error": "Data not Found..!"})
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(200, branches)
+
 }
