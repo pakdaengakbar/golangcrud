@@ -8,5 +8,5 @@ type Companie struct {
 	Caddress     string `json:"address"`
 	Chotline     string `json:"hotline"`
 	Cemail       string `json:"email"`
-	Created_at   string `json:"created_at"`
+	CreatedAt    string `json:"created_at"`
 }

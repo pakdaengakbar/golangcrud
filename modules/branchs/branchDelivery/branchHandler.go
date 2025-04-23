@@ -1,7 +1,8 @@
 package branchDelivery
 
 import (
-	"golangcrud/modules/branchs"
+	"golangcrud/models/branchModel"
+	"golangcrud/modules/branchs" // Ensure this package contains the Branch type
 	"strconv"
 
 	"golangcrud/middleware"
@@ -23,8 +24,27 @@ func NewBranchHandler(r *gin.Engine, branchUsecase branchs.BranchUsecase) {
 	branch.Use()
 	{
 		branch.GET("/", handler.GetAllBranch)
-
+		branch.POST("/", handler.Createbranch)
 	}
+}
+
+func (h *branchHandler) Createbranch(c *gin.Context) {
+	// Bind the request body to the Branch struct
+	var branch branchModel.Branch
+	if err := c.ShouldBindJSON(&branch); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	// Call the use case to create the branch
+	id, err := h.branchUsecase.CreateBranch(&branch)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the created branch ID as a response
+	c.JSON(201, gin.H{"id": id})
 }
 
 func (h *branchHandler) GetAllBranch(c *gin.Context) {
@@ -50,14 +70,14 @@ func (h *branchHandler) GetAllBranch(c *gin.Context) {
 			return
 		}
 		c.JSON(200, branches)
-	}
+	} else {
+		branches, err := h.branchUsecase.GetBranchesFiltered(name, page, offset)
+		if err != nil {
+			//c.JSON(404, gin.H{"error": "Data not Found..!"})
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, branches)
 
-	branches, err := h.branchUsecase.GetBranchesFiltered(name, page, offset)
-	if err != nil {
-		//c.JSON(404, gin.H{"error": "Data not Found..!"})
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
 	}
-	c.JSON(200, branches)
-
 }

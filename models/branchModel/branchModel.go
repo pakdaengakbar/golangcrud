@@ -10,5 +10,5 @@ type Branch struct {
 	Cemail       string `json:"email"`
 	Caddress     string `json:"address"`
 	Clocation    string `json:"location"`
-	Created_at   string `json:"created_at"`
+	CreatedAt    string `json:"created_at"`
 }

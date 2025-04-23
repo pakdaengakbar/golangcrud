@@ -28,3 +28,11 @@ func (bc BranchUsecase) GetBranchesFiltered(keyword string, page int, pageSize i
 	}
 	return branches, nil
 }
+
+func (cc *BranchUsecase) CreateBranch(branch *branchModel.Branch) (*int64, error) {
+	id, err := cc.BranchRepository.CreateBranch(branch)
+	if err != nil {
+		return nil, err
+	}
+	return id, nil
+}

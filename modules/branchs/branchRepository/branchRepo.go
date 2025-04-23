@@ -1,37 +1,29 @@
 package branchRepository
 
 import (
-	"database/sql"
 	"fmt"
 	"golangcrud/models/branchModel"
 	"golangcrud/modules/branchs"
+
+	"gorm.io/gorm"
 )
 
 type sqlRepository struct {
-	Conn *sql.DB
+	Conn *gorm.DB
 }
 
-func NewBranchRepository(Conn *sql.DB) branchs.BranchRepository {
+func NewBranchRepository(Conn *gorm.DB) branchs.BranchRepository {
 	return &sqlRepository{Conn}
 }
 
 func (db *sqlRepository) GetAllBranches() (*[]branchModel.Branch, error) {
 	var branches []branchModel.Branch
-	rows, err := db.Conn.Query("SELECT b.Id, c.Cname as Compname, b.Cname, b.Cdescription, b.Caddress, b.Created_at FROM mbranchs b " +
-		"join mcompanies c on b.Ncompanyid = c.Id")
+	err := db.Conn.Table("mbranchs b").
+		Select("b.id, c.cname as compname, b.cname, b.cdescription, b.caddress, b.created_at").
+		Joins("join mcompanies c on b.ncompanyid = c.id").
+		Scan(&branches).Error
+
 	if err != nil {
-		// log.Println("Query error:", err)
-		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var branch branchModel.Branch
-		if err := rows.Scan(&branch.Id, &branch.Compname, &branch.Cname, &branch.Cdescription, &branch.Caddress, &branch.Created_at); err != nil {
-			return nil, err
-		}
-		branches = append(branches, branch)
-	}
-	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 	return &branches, nil
@@ -47,47 +39,46 @@ func (db *sqlRepository) GetBranchesFiltered(keyword string, page int, pageSize 
 		page = 1
 	}
 	offset := (page - 1) * pageSize
-
-	query := `SELECT 
-			b.Id, 
-			c.Cname AS Compname, 
-			b.Cname, 
-			b.Cdescription, 
-			b.Caddress, 
-			b.Created_at 
-		FROM mbranchs b
-		JOIN mcompanies c ON b.Ncompanyid = c.Id
-		WHERE (b.Cname LIKE ? OR c.Cname LIKE ? OR b.Cdescription LIKE ?)
-		ORDER BY b.Created_at DESC
-		LIMIT ? OFFSET ?
-	`
-
-	// Prepare search pattern and pagination values
 	search := "%" + keyword + "%"
 
-	rows, err := db.Conn.Query(query, search, search, search, pageSize, offset)
+	err := db.Conn.Table("mbranchs b").
+		Select("b.id, c.cname as compname, b.cname, b.cdescription, b.caddress, b.created_at").
+		Joins("join mcompanies c on b.ncompanyid = c.id").
+		Where("b.cname LIKE ? OR c.cname LIKE ? OR b.cdescription LIKE ?", search, search, search).
+		Order("b.created_at desc").
+		Limit(pageSize).
+		Offset(offset).
+		Scan(&branches).Error
+
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var branch branchModel.Branch
-		if err := rows.Scan(
-			&branch.Id,
-			&branch.Compname,
-			&branch.Cname,
-			&branch.Cdescription,
-			&branch.Caddress,
-			&branch.Created_at,
-		); err != nil {
-			return nil, err
-		}
-		branches = append(branches, branch)
-	}
 
 	if len(branches) == 0 {
-		return nil, fmt.Errorf("no data found for name %s", search) // No rows found
+		return nil, fmt.Errorf("no data found for name %s", search)
 	}
 	return &branches, nil
+}
+func (db *sqlRepository) GetBranchByid(id int) (*branchModel.Branch, error) {
+	var branch branchModel.Branch
+	err := db.Conn.Table("mbranchs b").
+		Select("b.id, c.cname as compname, b.cname, b.cdescription, b.caddress, b.created_at").
+		Joins("join mcompanies c on b.ncompanyid = c.id").
+		Where("b.id = ?", id).
+		Scan(&branch).Error
+	if err != nil {
+		return nil, err
+	}
+	if branch.Id == 0 {
+		return nil, fmt.Errorf("no data found for id %d", id)
+	}
+	return &branch, nil
+}
+
+func (db *sqlRepository) CreateBranch(branch *branchModel.Branch) (*int64, error) {
+	if err := db.Conn.Create(branch).Error; err != nil {
+		return nil, err
+	}
+	id := int64(branch.Id)
+	return &id, nil
 }

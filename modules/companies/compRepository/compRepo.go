@@ -26,7 +26,7 @@ func (db *sqlRepository) GetAllCompanies() (*[]companieModel.Companie, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var company companieModel.Companie
-		if err := rows.Scan(&company.Id, &company.Cname, &company.Cdescription, &company.Caddress, &company.Created_at); err != nil {
+		if err := rows.Scan(&company.Id, &company.Cname, &company.Cdescription, &company.Caddress, &company.CreatedAt); err != nil {
 			return nil, err
 		}
 		companies = append(companies, company)
@@ -86,7 +86,7 @@ func (db *sqlRepository) GetCompanieByname(name string) (*[]companieModel.Compan
 
 	for rows.Next() {
 		var company companieModel.Companie
-		if err := rows.Scan(&company.Id, &company.Cname, &company.Cdescription, &company.Caddress, &company.Created_at); err != nil {
+		if err := rows.Scan(&company.Id, &company.Cname, &company.Cdescription, &company.Caddress, &company.CreatedAt); err != nil {
 			return nil, err
 		}
 		companies = append(companies, company)
