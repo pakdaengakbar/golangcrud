@@ -4,6 +4,8 @@ import (
 	"golangcrud/modules/branchs"
 	"strconv"
 
+	"golangcrud/middleware"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,6 +19,7 @@ func NewBranchHandler(r *gin.Engine, branchUsecase branchs.BranchUsecase) {
 	}
 
 	branch := r.Group("/branchs")
+	branch.Use(middleware.JWTAuth())
 	branch.Use()
 	{
 		branch.GET("/", handler.GetAllBranch)

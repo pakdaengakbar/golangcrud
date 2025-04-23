@@ -34,7 +34,6 @@ func NewUserHandler(r *gin.Engine, userUsecase users.UserUsecase) {
 		users.GET("/:id", handler.GetUser)
 		users.PUT("/", handler.UpdateUserHandler)
 	}
-
 }
 
 func (h *userHandler) GetAllUsers(c *gin.Context) {
