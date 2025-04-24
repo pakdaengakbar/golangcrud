@@ -2,6 +2,7 @@ package userDelivery
 
 import (
 	"golangcrud/models/userModel"
+	"net/http"
 	"os"
 	"time"
 
@@ -16,36 +17,37 @@ type LoginRequest struct {
 }
 
 func (h *userHandler) LoginHandler(c *gin.Context) {
-	var loginRequest LoginRequest
-	if err := c.ShouldBindJSON(&loginRequest); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request"})
+	// Uncomment the following lines if you want to use JSON body instead of Basic Auth
+	email, password, ok := c.Request.BasicAuth()
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing or invalid"})
 		return
 	}
 
-	user, err := h.UserUsecase.FindByEmail(loginRequest.Email)
+	user, err := h.UserUsecase.FindByEmail(email)
 	if err != nil {
-		c.JSON(401, gin.H{"error": "Invalid credentials"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password)); err != nil {
-		c.JSON(401, gin.H{"error": "Invalid credentials"})
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
 	accessToken, err := createAccessToken(user)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Could not generate access token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate access token"})
 		return
 	}
 
 	refreshToken, err := createRefreshToken(user)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Could not generate refresh token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate refresh token"})
 		return
 	}
 
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 	})
