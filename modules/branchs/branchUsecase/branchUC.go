@@ -38,3 +38,10 @@ func (cc *BranchUsecase) CreateBranch(branch *branchModel.Mbranch) (*int64, erro
 }
 
 // GetBranchByID retrieves a branch by its ID from the repository.
+func (bc BranchUsecase) GetBranchByID(id int) (*branchModel.Mbranch, error) {
+	branch, err := bc.BranchRepository.GetBranchByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return branch, nil
+}

@@ -25,7 +25,7 @@ func NewBranchHandler(r *gin.Engine, branchUsecase branchs.BranchUsecase) {
 	{
 		branch.GET("/", handler.GetAllBranch)
 		branch.POST("/", handler.Createbranch)
-
+		branch.GET("/:id", handler.GetBranchByID)
 	}
 }
 
@@ -81,4 +81,24 @@ func (h *branchHandler) Createbranch(c *gin.Context) {
 
 	// Return the created branch ID as a response
 	c.JSON(201, gin.H{"id": id})
+}
+
+func (h *branchHandler) GetBranchByID(c *gin.Context) {
+	// Get the branch ID from the URL parameter
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid branch ID"})
+		return
+	}
+
+	// Call the use case to get the branch by ID
+	branch, err := h.branchUsecase.GetBranchByID(id)
+	if err != nil {
+		c.JSON(404, gin.H{"error": "Branch not found"})
+		return
+	}
+
+	// Return the branch as a response
+	c.JSON(200, branch)
 }

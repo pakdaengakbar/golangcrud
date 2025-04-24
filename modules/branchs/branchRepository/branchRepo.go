@@ -67,3 +67,20 @@ func (db *sqlRepository) CreateBranch(branch *branchModel.Mbranch) (*int64, erro
 	id := int64(branch.Id)
 	return &id, nil
 }
+
+func (db *sqlRepository) GetBranchByID(id int) (*branchModel.Mbranch, error) {
+	var branch branchModel.Mbranch
+	err := db.Conn.Table("mbranchs b").
+		Select("b.id, c.cname as compname, b.cname, b.cdescription, b.caddress, b.created_at").
+		Joins("join mcompanies c on b.ncompanyid = c.id").
+		Where("b.id = ?", id).
+		Scan(&branch).Error
+
+	if err != nil {
+		return nil, err
+	}
+	if branch.Id == 0 {
+		return nil, fmt.Errorf("branch with ID %d not found", id)
+	}
+	return &branch, nil
+}
