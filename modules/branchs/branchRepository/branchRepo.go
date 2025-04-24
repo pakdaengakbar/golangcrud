@@ -16,8 +16,8 @@ func NewBranchRepository(Conn *gorm.DB) branchs.BranchRepository {
 	return &sqlRepository{Conn}
 }
 
-func (db *sqlRepository) GetAllBranches() (*[]branchModel.Branch, error) {
-	var branches []branchModel.Branch
+func (db *sqlRepository) GetAllBranches() (*[]branchModel.Mbranch, error) {
+	var branches []branchModel.Mbranch
 	err := db.Conn.Table("mbranchs b").
 		Select("b.id, c.cname as compname, b.cname, b.cdescription, b.caddress, b.created_at").
 		Joins("join mcompanies c on b.ncompanyid = c.id").
@@ -29,8 +29,8 @@ func (db *sqlRepository) GetAllBranches() (*[]branchModel.Branch, error) {
 	return &branches, nil
 }
 
-func (db *sqlRepository) GetBranchesFiltered(keyword string, page int, pageSize int) (*[]branchModel.Branch, error) {
-	var branches []branchModel.Branch
+func (db *sqlRepository) GetBranchesFiltered(keyword string, page int, pageSize int) (*[]branchModel.Mbranch, error) {
+	var branches []branchModel.Mbranch
 
 	if pageSize <= 0 {
 		pageSize = 10
@@ -59,24 +59,9 @@ func (db *sqlRepository) GetBranchesFiltered(keyword string, page int, pageSize 
 	}
 	return &branches, nil
 }
-func (db *sqlRepository) GetBranchByid(id int) (*branchModel.Branch, error) {
-	var branch branchModel.Branch
-	err := db.Conn.Table("mbranchs b").
-		Select("b.id, c.cname as compname, b.cname, b.cdescription, b.caddress, b.created_at").
-		Joins("join mcompanies c on b.ncompanyid = c.id").
-		Where("b.id = ?", id).
-		Scan(&branch).Error
-	if err != nil {
-		return nil, err
-	}
-	if branch.Id == 0 {
-		return nil, fmt.Errorf("no data found for id %d", id)
-	}
-	return &branch, nil
-}
 
-func (db *sqlRepository) CreateBranch(branch *branchModel.Branch) (*int64, error) {
-	if err := db.Conn.Create(branch).Error; err != nil {
+func (db *sqlRepository) CreateBranch(branch *branchModel.Mbranch) (*int64, error) {
+	if err := db.Conn.Table("mbranchs").Create(branch).Error; err != nil {
 		return nil, err
 	}
 	id := int64(branch.Id)

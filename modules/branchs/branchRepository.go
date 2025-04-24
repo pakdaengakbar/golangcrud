@@ -5,7 +5,7 @@ import (
 )
 
 type BranchRepository interface {
-	GetAllBranches() (*[]branchModel.Branch, error)
-	GetBranchesFiltered(keyword string, page int, pageSize int) (*[]branchModel.Branch, error)
-	CreateBranch(branch *branchModel.Branch) (*int64, error)
+	GetAllBranches() (*[]branchModel.Mbranch, error)
+	GetBranchesFiltered(keyword string, page int, pageSize int) (*[]branchModel.Mbranch, error)
+	CreateBranch(branch *branchModel.Mbranch) (*int64, error)
 }
