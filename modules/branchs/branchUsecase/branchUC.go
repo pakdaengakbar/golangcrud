@@ -21,6 +21,7 @@ func (bc BranchUsecase) GetAllBranches() (*[]branchModel.Mbranch, error) {
 	return branches, nil
 }
 
+// GetBranchesFiltered retrieves branches filtered by a keyword from the repository.
 func (bc BranchUsecase) GetBranchesFiltered(keyword string, page int, pageSize int) (*[]branchModel.Mbranch, error) {
 	branches, err := bc.BranchRepository.GetBranchesFiltered(keyword, page, pageSize)
 	if err != nil {
@@ -29,6 +30,7 @@ func (bc BranchUsecase) GetBranchesFiltered(keyword string, page int, pageSize i
 	return branches, nil
 }
 
+// CreateBranch creates a new branch in the repository.
 func (cc *BranchUsecase) CreateBranch(branch *branchModel.Mbranch) (*int64, error) {
 	id, err := cc.BranchRepository.CreateBranch(branch)
 	if err != nil {
@@ -44,4 +46,14 @@ func (bc BranchUsecase) GetBranchByID(id int) (*branchModel.Mbranch, error) {
 		return nil, err
 	}
 	return branch, nil
+
+}
+
+// DeleteBranch deletes a branch by its ID from the repository.
+func (bc BranchUsecase) DeleteBranch(id int) error {
+	err := bc.BranchRepository.DeleteBranch(id)
+	if err != nil {
+		return err
+	}
+	return nil
 }

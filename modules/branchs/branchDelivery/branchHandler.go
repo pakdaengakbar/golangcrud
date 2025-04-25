@@ -26,6 +26,9 @@ func NewBranchHandler(r *gin.Engine, branchUsecase branchs.BranchUsecase) {
 		branch.GET("/", handler.GetAllBranch)
 		branch.POST("/", handler.Createbranch)
 		branch.GET("/:id", handler.GetBranchByID)
+		branch.DELETE("/:id", handler.DeleteBranch)
+		//branch.PUT("/:id", handler.UpdateBranch)
+
 	}
 }
 
@@ -101,4 +104,28 @@ func (h *branchHandler) GetBranchByID(c *gin.Context) {
 
 	// Return the branch as a response
 	c.JSON(200, branch)
+}
+
+func (h *branchHandler) DeleteBranch(c *gin.Context) {
+	// Get the branch ID from the URL parameter
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid branch ID"})
+		return
+	}
+
+	// Call the use case to delete the branch by ID
+	err = h.branchUsecase.DeleteBranch(id)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	if err != nil {
+		c.JSON(404, gin.H{"error": "Branch not found"})
+		return
+	}
+
+	// Return a success message as a response
+	c.JSON(200, gin.H{"message": "Branch deleted successfully"})
 }

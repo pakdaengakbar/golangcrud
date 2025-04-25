@@ -5,6 +5,7 @@ import "time"
 type Mbranch struct {
 	Id           int       `json:"id"`
 	Ncompanyid   int       `json:"ncompanyid"` // Added Ncompanyid field
+	Compname     string    `json:"compname"`
 	Cname        string    `json:"branchname"`
 	Ccode        string    `json:"code"`
 	Cdescription string    `json:"description"`

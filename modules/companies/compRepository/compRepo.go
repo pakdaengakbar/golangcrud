@@ -3,6 +3,7 @@ package compRepository
 import (
 	"database/sql"
 	"fmt"
+	"golangcrud/models/branchModel"
 	"golangcrud/models/companieModel"
 	"golangcrud/modules/companies"
 	"log"
@@ -18,20 +19,64 @@ func NewCompRepository(Conn *sql.DB) companies.CompRepository {
 
 func (db *sqlRepository) GetAllCompanies() (*[]companieModel.Companie, error) {
 	var companies []companieModel.Companie
+
 	rows, err := db.Conn.Query("SELECT Id, Cname, Cdescription, Caddress, Created_at FROM mcompanies")
 	if err != nil {
-		// log.Println("Query error:", err)
 		return nil, err
 	}
 	defer rows.Close()
+
 	for rows.Next() {
 		var company companieModel.Companie
 		if err := rows.Scan(&company.Id, &company.Cname, &company.Cdescription, &company.Caddress, &company.CreatedAt); err != nil {
 			return nil, err
 		}
+
+		// Fetch branches for each company
+		branches, err := db.GetBranchesByCompanyID(company.Id)
+		if err != nil {
+			return nil, err
+		}
+		company.Branches = *branches
+
 		companies = append(companies, company)
 	}
+
 	return &companies, nil
+}
+
+func (db *sqlRepository) GetBranchesByCompanyID(companyID int) (*[]branchModel.Mbranch, error) {
+	var branches []branchModel.Mbranch
+
+	query := `SELECT Id, Ncompanyid, Cname, Ccode, Cdescription, Cphone, Cemail, Caddress, Clocation, Created_at
+			  FROM mbranchs WHERE Ncompanyid = ?`
+
+	rows, err := db.Conn.Query(query, companyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var branch branchModel.Mbranch
+		if err := rows.Scan(
+			&branch.Id,
+			&branch.Ncompanyid,
+			&branch.Cname,
+			&branch.Ccode,
+			&branch.Cdescription,
+			&branch.Cphone,
+			&branch.Cemail,
+			&branch.Caddress,
+			&branch.Clocation,
+			&branch.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		branches = append(branches, branch)
+	}
+
+	return &branches, nil
 }
 
 func (db *sqlRepository) CreateCompanie(company *companieModel.Companie) (*int64, error) {

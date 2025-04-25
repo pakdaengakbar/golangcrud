@@ -19,7 +19,7 @@ func NewBranchRepository(Conn *gorm.DB) branchs.BranchRepository {
 func (db *sqlRepository) GetAllBranches() (*[]branchModel.Mbranch, error) {
 	var branches []branchModel.Mbranch
 	err := db.Conn.Table("mbranchs b").
-		Select("b.id, c.cname as compname, b.cname, b.cdescription, b.caddress, b.created_at").
+		Select("b.id, b.ncompanyid, c.cname as compname, b.cname, b.cdescription, b.caddress, b.created_at").
 		Joins("join mcompanies c on b.ncompanyid = c.id").
 		Scan(&branches).Error
 
@@ -83,4 +83,12 @@ func (db *sqlRepository) GetBranchByID(id int) (*branchModel.Mbranch, error) {
 		return nil, fmt.Errorf("branch with ID %d not found", id)
 	}
 	return &branch, nil
+}
+
+func (db *sqlRepository) DeleteBranch(id int) error {
+	// Delete the branch with the given ID
+	if err := db.Conn.Table("mbranchs").Where("id = ?", id).Delete(&branchModel.Mbranch{}).Error; err != nil {
+		return err
+	}
+	return nil
 }
