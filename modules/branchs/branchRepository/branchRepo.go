@@ -19,7 +19,7 @@ func NewBranchRepository(Conn *gorm.DB) branchs.BranchRepository {
 func (db *sqlRepository) GetAllBranches() (*[]branchModel.Mbranch, error) {
 	var branches []branchModel.Mbranch
 	err := db.Conn.Table("mbranchs b").
-		Select("b.id, b.ncompanyid, c.cname as compname, b.cname, b.cdescription, b.caddress, b.created_at").
+		Select("b.id, b.ncompanyid, c.cname as compname, b.cname, b.cdescription, b.cphone, b.cemail, b.caddress, b.clocation, b.created_at").
 		Joins("join mcompanies c on b.ncompanyid = c.id").
 		Scan(&branches).Error
 
@@ -60,7 +60,7 @@ func (db *sqlRepository) GetBranchesFiltered(keyword string, page int, pageSize 
 	return &branches, nil
 }
 
-func (db *sqlRepository) CreateBranch(branch *branchModel.Mbranch) (*int64, error) {
+func (db *sqlRepository) CreateBranch(branch *branchModel.BranchUpdateInput) (*int64, error) {
 	if err := db.Conn.Table("mbranchs").Create(branch).Error; err != nil {
 		return nil, err
 	}
@@ -83,6 +83,10 @@ func (db *sqlRepository) GetBranchByID(id int) (*branchModel.Mbranch, error) {
 		return nil, fmt.Errorf("branch with ID %d not found", id)
 	}
 	return &branch, nil
+}
+
+func (db *sqlRepository) UpdateBranch(id int, input branchModel.BranchUpdateInput) error {
+	return db.Conn.Table("mbranchs").Where("id = ?", id).Updates(input).Error
 }
 
 func (db *sqlRepository) DeleteBranch(id int) error {

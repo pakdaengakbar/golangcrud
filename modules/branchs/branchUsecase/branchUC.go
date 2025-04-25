@@ -31,7 +31,7 @@ func (bc BranchUsecase) GetBranchesFiltered(keyword string, page int, pageSize i
 }
 
 // CreateBranch creates a new branch in the repository.
-func (cc *BranchUsecase) CreateBranch(branch *branchModel.Mbranch) (*int64, error) {
+func (cc *BranchUsecase) CreateBranch(branch *branchModel.BranchUpdateInput) (*int64, error) {
 	id, err := cc.BranchRepository.CreateBranch(branch)
 	if err != nil {
 		return nil, err
@@ -49,11 +49,12 @@ func (bc BranchUsecase) GetBranchByID(id int) (*branchModel.Mbranch, error) {
 
 }
 
+func (bc *BranchUsecase) UpdateBranch(id int, input branchModel.BranchUpdateInput) error {
+	return bc.BranchRepository.UpdateBranch(id, input)
+}
+
 // DeleteBranch deletes a branch by its ID from the repository.
 func (bc BranchUsecase) DeleteBranch(id int) error {
 	err := bc.BranchRepository.DeleteBranch(id)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }

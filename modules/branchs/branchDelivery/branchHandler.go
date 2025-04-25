@@ -3,6 +3,7 @@ package branchDelivery
 import (
 	"golangcrud/models/branchModel"
 	"golangcrud/modules/branchs" // Ensure this package contains the Branch type
+	"net/http"
 	"strconv"
 
 	"golangcrud/middleware"
@@ -19,16 +20,15 @@ func NewBranchHandler(r *gin.Engine, branchUsecase branchs.BranchUsecase) {
 		branchUsecase: branchUsecase,
 	}
 
-	branch := r.Group("/branchs")
-	branch.Use(middleware.JWTAuth())
-	branch.Use()
+	branchs := r.Group("/branchs")
+	branchs.Use(middleware.JWTAuth())
+	branchs.Use()
 	{
-		branch.GET("/", handler.GetAllBranch)
-		branch.POST("/", handler.Createbranch)
-		branch.GET("/:id", handler.GetBranchByID)
-		branch.DELETE("/:id", handler.DeleteBranch)
-		//branch.PUT("/:id", handler.UpdateBranch)
-
+		branchs.GET("/", handler.GetAllBranch)
+		branchs.POST("/", handler.Createbranch)
+		branchs.GET("/:id", handler.GetBranchByID)
+		branchs.DELETE("/:id", handler.DeleteBranch)
+		branchs.PUT("/:id", handler.UpdateBranch)
 	}
 }
 
@@ -67,25 +67,6 @@ func (h *branchHandler) GetAllBranch(c *gin.Context) {
 	}
 }
 
-func (h *branchHandler) Createbranch(c *gin.Context) {
-	// Bind the request body to the Branch struct
-	var branch branchModel.Mbranch
-	if err := c.ShouldBindJSON(&branch); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Call the use case to create the branch
-	id, err := h.branchUsecase.CreateBranch(&branch)
-	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Return the created branch ID as a response
-	c.JSON(201, gin.H{"id": id})
-}
-
 func (h *branchHandler) GetBranchByID(c *gin.Context) {
 	// Get the branch ID from the URL parameter
 	idStr := c.Param("id")
@@ -104,6 +85,25 @@ func (h *branchHandler) GetBranchByID(c *gin.Context) {
 
 	// Return the branch as a response
 	c.JSON(200, branch)
+}
+
+func (h *branchHandler) Createbranch(c *gin.Context) {
+	// Bind the request body to the Branch struct
+	var branch branchModel.BranchUpdateInput
+	if err := c.ShouldBindJSON(&branch); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Call the use case to create the branch
+	id, err := h.branchUsecase.CreateBranch(&branch)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the created branch ID as a response
+	c.JSON(201, gin.H{"id": id})
 }
 
 func (h *branchHandler) DeleteBranch(c *gin.Context) {
@@ -128,4 +128,29 @@ func (h *branchHandler) DeleteBranch(c *gin.Context) {
 
 	// Return a success message as a response
 	c.JSON(200, gin.H{"message": "Branch deleted successfully"})
+}
+
+func (h *branchHandler) UpdateBranch(c *gin.Context) {
+	var input branchModel.BranchUpdateInput
+	id := c.Param("id") // Make sure you define the route like PUT /branchs/:id
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	// Convert id to int
+	intID, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid branch ID"})
+		return
+	}
+
+	err = h.branchUsecase.UpdateBranch(intID, input)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Branch updated successfully"})
 }
