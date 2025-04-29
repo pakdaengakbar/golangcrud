@@ -30,9 +30,9 @@ func NewUserHandler(r *gin.Engine, userUsecase users.UserUsecase) {
 	{
 		users.GET("/", handler.GetAllUsers)
 		users.POST("/", handler.CreateUserHandler)
-		users.DELETE("/:id", handler.DeleteUserHandler)
 		users.GET("/:id", handler.GetUser)
 		users.PUT("/", handler.UpdateUserHandler)
+		users.DELETE("/:id", handler.DeleteUserHandler)
 	}
 }
 

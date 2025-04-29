@@ -27,8 +27,8 @@ func NewBranchHandler(r *gin.Engine, branchUsecase branchs.BranchUsecase) {
 		branchs.GET("/", handler.GetAllBranch)
 		branchs.POST("/", handler.Createbranch)
 		branchs.GET("/:id", handler.GetBranchByID)
-		branchs.DELETE("/:id", handler.DeleteBranch)
 		branchs.PUT("/:id", handler.UpdateBranch)
+		branchs.DELETE("/:id", handler.DeleteBranch)
 	}
 }
 
